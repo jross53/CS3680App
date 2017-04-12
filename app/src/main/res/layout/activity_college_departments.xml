@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/activity_main"
     android:layout_width="match_parent"
@@ -9,18 +8,18 @@
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
-    tools:context="com.jrsqlite.MainActivity">
+    tools:context="com.jrsqlite.CourseListActivity">
 
     <android.support.v7.widget.RecyclerView
-        android:id="@+id/recycler_view"
+        android:id="@+id/department_recycler_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_alignParentStart="true"
-        android:layout_below="@+id/filter_edit_text"
+        android:layout_below="@+id/department_filter_edit_text"
         android:layout_marginTop="96dp" />
 
     <ImageButton
-        android:id="@+id/add_new_button"
+        android:id="@+id/add_new_department_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
 
@@ -30,45 +29,38 @@
         android:src="@android:drawable/ic_input_add" />
 
     <EditText
-        android:id="@+id/filter_edit_text"
+        android:id="@+id/department_filter_edit_text"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentStart="true"
         android:layout_alignParentTop="true"
         android:layout_marginTop="46dp"
         android:ems="10"
-        android:hint="Filter Criteria"
+        android:hint="@string/search_for_department"
         android:inputType="textPersonName"
         android:textColorLink="?attr/actionModeSplitBackground" />
 
-    <Spinner
-        android:id="@+id/filter_spinner"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_alignParentEnd="true"
-        android:layout_alignParentTop="true" />
-
     <Button
-        android:id="@+id/filter_button"
+        android:id="@+id/department_search_button"
         style="@style/Widget.AppCompat.Button.Colored"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentEnd="true"
-        android:layout_alignTop="@+id/filter_edit_text"
+        android:layout_alignTop="@+id/department_filter_edit_text"
         android:background="@color/colorPrimary"
-        android:text="Filter"
+        android:text="@string/search"
         android:textColorLink="?attr/actionModeSplitBackground" />
 
     <TextView
-        android:text="Clear Filter"
+        android:id="@+id/clear_department_filter_text_view"
         android:layout_width="wrap_content"
         android:layout_height="?android:attr/dialogPreferredPadding"
-        android:layout_marginTop="23dp"
-        android:id="@+id/clear_filter_text_view"
-        tools:text="Clear Filter"
-        android:layout_below="@+id/filter_button"
         android:layout_alignParentEnd="true"
+        android:layout_below="@+id/department_search_button"
         android:layout_marginEnd="10dp"
-        tools:layout_height="30dp" />
+        android:layout_marginTop="23dp"
+        android:text="@string/clear_filter"
+        tools:layout_height="30dp"
+        tools:text="Clear Filter" />
 
 </RelativeLayout>

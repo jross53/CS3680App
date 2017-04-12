@@ -12,38 +12,33 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
-import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.jrsqlite.database.CourseContract;
-import com.jrsqlite.database.CourseDAO;
+import com.jrsqlite.database.DepartmentDAO;
 
 import java.util.List;
 
-public class CourseListActivity extends AppCompatActivity {
+public class DepartmentListActivity extends AppCompatActivity {
     private RecyclerView recyclerView;
-    private RVAdapter rvAdapter;
-    private final int DELETED_COURSE = 3;
-    private final int ADDED_COURSE = 4;
+    private DepartmentAdapter departmentAdapter;
+    private final int DELETED_DEPARTMENT = 3;
+    private final int ADDED_DEPARTMENT = 4;
 
-    private List<CollegeCourse> collegeCourseList;
-    private Spinner spinner;
-    private CourseDAO courseDAO;
+    private List<CollegeDepartment> collegeDepartmentList;
+    private DepartmentDAO departmentDAO;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_college_courses);
+        setContentView(R.layout.activity_college_departments);
 
-        courseDAO = new CourseDAO(getApplicationContext());
-        generateNewCollegeCourseListFromDatabase();
-        createSpinner();
+        departmentDAO = new DepartmentDAO(getApplicationContext());
+        generateNewCollegeDepartmentListFromDatabase();
         createRecyclerView();
         addClickEventToAddNewButton();
         addClickEventToFilterButton();
@@ -51,105 +46,72 @@ public class CourseListActivity extends AppCompatActivity {
     }
 
     private void addClickEventToClearFilterText() {
-        TextView clearFilterTextView = (TextView) findViewById(R.id.clear_filter_text_view);
+        TextView clearFilterTextView = (TextView) findViewById(R.id.clear_department_filter_text_view);
         clearFilterTextView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                EditText filterEditText = (EditText) findViewById(R.id.filter_edit_text);
+                EditText filterEditText = (EditText) findViewById(R.id.department_filter_edit_text);
                 filterEditText.setText("");
-                collegeCourseList = courseDAO.findAll();
-                rvAdapter.notifyDataSetChanged();
+                collegeDepartmentList = departmentDAO.findAll();
+                departmentAdapter.notifyDataSetChanged();
             }
         });
     }
 
     private void addClickEventToFilterButton() {
-        Button filterButton = (Button) findViewById(R.id.filter_button);
+        Button filterButton = (Button) findViewById(R.id.department_search_button);
         filterButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
                 imm.hideSoftInputFromWindow(v.getWindowToken(), 0);
-                String fieldToFilterBy = spinner.getSelectedItem().toString().toLowerCase();
-                EditText filterEditText = (EditText) findViewById(R.id.filter_edit_text);
+                EditText filterEditText = (EditText) findViewById(R.id.department_filter_edit_text);
                 String valueToFilterBy = filterEditText.getText().toString();
-                switch (fieldToFilterBy) {
-                    case "course name":
-                        collegeCourseList = courseDAO.findAllByName(valueToFilterBy);
-                        break;
-                    case CourseContract.CourseEntry.COLUMN_INSTRUCTOR:
-                        collegeCourseList = courseDAO.findAllByInstructor(valueToFilterBy);
-                        break;
-                    case CourseContract.CourseEntry.COLUMN_NUMBER:
-                        collegeCourseList = courseDAO.findAllByNumber(valueToFilterBy);
-                        break;
-                    case CourseContract.CourseEntry.COLUMN_CAPACITY:
-                        int capacityToFilterBy;
-                        try {
-                            capacityToFilterBy = Integer.parseInt(valueToFilterBy);
-                        } catch (NumberFormatException ex) {
-                            Toast.makeText(CourseListActivity.this, "Please enter a valid number", Toast.LENGTH_SHORT).show();
-                            return;
-                        }
-
-                        collegeCourseList = courseDAO.findAllByCapacity(capacityToFilterBy);
-                        break;
-                    default:
-                        Toast.makeText(CourseListActivity.this, "Unknown filter: " + fieldToFilterBy, Toast.LENGTH_SHORT).show();
-                        return;
-                }
-                rvAdapter.notifyDataSetChanged();
+                collegeDepartmentList = departmentDAO.findAllByName(valueToFilterBy);
+                departmentAdapter.notifyDataSetChanged();
             }
         });
     }
 
     private void addClickEventToAddNewButton() {
-        ImageButton addNewButton = (ImageButton) findViewById(R.id.add_new_button);
+        ImageButton addNewButton = (ImageButton) findViewById(R.id.add_new_department_button);
         addNewButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(CourseListActivity.this, NewCourseActivity.class);
-                startActivityForResult(intent, ADDED_COURSE);
+                Intent intent = new Intent(DepartmentListActivity.this, NewDepartmentActivity.class);
+                startActivityForResult(intent, ADDED_DEPARTMENT);
             }
         });
     }
 
-    private void generateNewCollegeCourseListFromDatabase() {
-        List<CollegeCourse> existingCollegeCourses = courseDAO.findAll();
-        if(existingCollegeCourses == null || existingCollegeCourses.size() == 0) {
-            boolean testCoursesWereInserted = courseDAO.insertTestCourses();
-            if (!testCoursesWereInserted) {
-                String unableToInsertCoursesMessage = "Unable to insert test courses";
-                Log.e("CourseListActivity", unableToInsertCoursesMessage);
+    private void generateNewCollegeDepartmentListFromDatabase() {
+        List<CollegeDepartment> existingCollegeDepartments = departmentDAO.findAll();
+        if(existingCollegeDepartments == null || existingCollegeDepartments.size() == 0) {
+            boolean testDepartmentsWereInserted = departmentDAO.insertTestDepartments();
+            if (!testDepartmentsWereInserted) {
+                String unableToInsertDepartmentsMessage = "Unable to insert test departments";
+                Log.e("DepartmentListActivity", unableToInsertDepartmentsMessage);
                 return;
             }
-            collegeCourseList = courseDAO.findAll();
+            collegeDepartmentList = departmentDAO.findAll();
         } else {
-            collegeCourseList = existingCollegeCourses;
+            collegeDepartmentList = existingCollegeDepartments;
         }
 
 
 
-        collegeCourseList = courseDAO.findAll();
+        collegeDepartmentList = departmentDAO.findAll();
     }
 
     private void createRecyclerView() {
-        recyclerView = (RecyclerView) findViewById(R.id.recycler_view);
+        recyclerView = (RecyclerView) findViewById(R.id.department_recycler_view);
         recyclerView.setHasFixedSize(true);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        rvAdapter = new RVAdapter();
-        recyclerView.setAdapter(rvAdapter);
+        departmentAdapter = new DepartmentAdapter();
+        recyclerView.setAdapter(departmentAdapter);
     }
 
-    private void createSpinner() {
-        spinner = (Spinner) findViewById(R.id.filter_spinner);
-        ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this,
-                R.array.filter_array, android.R.layout.simple_spinner_item);
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        spinner.setAdapter(adapter);
-    }
-
-    public class RVAdapter extends RecyclerView.Adapter<RVAdapter.ItemHolder> {
+    public class DepartmentAdapter extends RecyclerView.Adapter<DepartmentAdapter.ItemHolder> {
 
         public class ItemHolder extends RecyclerView.ViewHolder {
 
@@ -168,61 +130,56 @@ public class CourseListActivity extends AppCompatActivity {
             view.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    Intent intent = new Intent(CourseListActivity.this, DetailsActivity.class);
+                    Intent intent = new Intent(DepartmentListActivity.this, DepartmentDetailsActivity.class);
                     Bundle bundle = new Bundle();
                     String name = ((AppCompatTextView) v).getText().toString();
-                    CollegeCourse collegeCourse = getCollegeCourse(name);
-                    if (collegeCourse == null) {
-                        Toast.makeText(CourseListActivity.this,
+                    CollegeDepartment collegeDepartment = getCollegeDepartment(name);
+                    if (collegeDepartment == null) {
+                        Toast.makeText(DepartmentListActivity.this,
                                 "There was a problem finding " + name, Toast.LENGTH_LONG).show();
                         return;
                     }
-                    bundle.putString("name", collegeCourse.getName());
-                    bundle.putString("instructor", collegeCourse.getInstructor());
-                    bundle.putInt("capacity", collegeCourse.getCapacity());
-                    bundle.putString("number", collegeCourse.getNumber());
-                    int indexOfCourse = getIndexOfCourse(collegeCourse);
-                    if (indexOfCourse == -1) {
-                        Log.e("CourseListActivity", "Unabled to get index of course: "
-                                + collegeCourse.getName());
+                    bundle.putString("name", collegeDepartment.getName());
+                    int indexOfDepartment = getIndexOfDepartment(collegeDepartment);
+                    if (indexOfDepartment == -1) {
+                        Log.e("DepartmentListActivity", "Unable to get index of department: "
+                                + collegeDepartment.getName());
                         return;
                     }
-                    bundle.putInt("position", indexOfCourse);
+                    bundle.putInt("position", indexOfDepartment);
                     intent.putExtras(bundle);
-                    startActivityForResult(intent, DELETED_COURSE);
+                    startActivityForResult(intent, DELETED_DEPARTMENT);
                 }
             });
 
             return new ItemHolder(view);
         }
 
-        private CollegeCourse getCollegeCourse(String name) {
-            for (CollegeCourse collegeCourse : collegeCourseList) {
-                if (collegeCourse.getName().equals(name)) {
-                    return collegeCourse;
+        private CollegeDepartment getCollegeDepartment(String name) {
+            for (CollegeDepartment collegeDepartment : collegeDepartmentList) {
+                if (collegeDepartment.getName().equals(name)) {
+                    return collegeDepartment;
                 }
             }
-            Log.e("CourseListActivity", "Unable to find college course: " + name);
+            Log.e("DepartmentListActivity", "Unable to find college department: " + name);
             return null;
         }
 
         @Override
         public void onBindViewHolder(ItemHolder holder, int position) {
-            String item = collegeCourseList.get(position).getName();
+            String item = collegeDepartmentList.get(position).getName();
             holder.itemTextView.setText(item);
         }
 
         public int getItemCount() {
-            return collegeCourseList == null ? 0 : collegeCourseList.size();
+            return collegeDepartmentList == null ? 0 : collegeDepartmentList.size();
         }
     }
 
-    private int getIndexOfCourse(CollegeCourse collegeCourse) {
-        for (int index = 0; index < collegeCourseList.size(); index++) {
-            CollegeCourse collegeCourseInQuestion = collegeCourseList.get(index);
-            if (collegeCourseInQuestion.getName().equals(collegeCourse.getName())
-                    && collegeCourseInQuestion.getInstructor().equals(collegeCourse.getInstructor())
-                    && collegeCourseInQuestion.getNumber().equals(collegeCourse.getNumber())) {
+    private int getIndexOfDepartment(CollegeDepartment collegeDepartment) {
+        for (int index = 0; index < collegeDepartmentList.size(); index++) {
+            CollegeDepartment collegeDepartmentInQuestion = collegeDepartmentList.get(index);
+            if (collegeDepartmentInQuestion.getName().equals(collegeDepartment.getName())) {
                 return index;
             }
         }
@@ -235,39 +192,36 @@ public class CourseListActivity extends AppCompatActivity {
             return;
         }
         int result = data.getIntExtra("result", 9);
-        if (result == DELETED_COURSE) {
+        if (result == DELETED_DEPARTMENT) {
             int position = data.getIntExtra("position", -1);
             if (position > -1) {
                 removeAt(position);
-                rvAdapter.notifyDataSetChanged();
+                departmentAdapter.notifyDataSetChanged();
                 recyclerView.getLayoutManager().scrollToPosition(0);
             }
-        } else if (result == ADDED_COURSE) {
-            String courseName = data.getStringExtra("name");
-            String instructor = data.getStringExtra("instructor");
-            int capacity = data.getIntExtra("capacity", 30);
-            String courseNumber = data.getStringExtra("number");
+        } else if (result == ADDED_DEPARTMENT) {
+            String departmentName = data.getStringExtra("name");
 
-            CollegeCourse collegeCourse = new CollegeCourse(courseName, capacity, instructor, courseNumber);
-            courseDAO.saveCourse(collegeCourse);
-            collegeCourseList.add(0, collegeCourse);
-            rvAdapter.notifyItemInserted(0);
+            CollegeDepartment collegeDepartment = new CollegeDepartment(departmentName);
+            departmentDAO.saveDepartment(collegeDepartment);
+            collegeDepartmentList.add(0, collegeDepartment);
+            departmentAdapter.notifyItemInserted(0);
             recyclerView.getLayoutManager().scrollToPosition(0);
-            Toast.makeText(CourseListActivity.this, "Added " + courseName, Toast.LENGTH_LONG).show();
+            Toast.makeText(DepartmentListActivity.this, "Added " + departmentName, Toast.LENGTH_LONG).show();
         }
 
     }
 
     public void removeAt(int position) {
-        CollegeCourse collegeCourse = collegeCourseList.get(position);
-        String name = collegeCourse.getName();
-        if(!courseDAO.deleteCourse(collegeCourse)) {
-            Toast.makeText(CourseListActivity.this, "Unable to delete course: " + name, Toast.LENGTH_LONG).show();
+        CollegeDepartment collegeDepartment = collegeDepartmentList.get(position);
+        String name = collegeDepartment.getName();
+        if(!departmentDAO.deleteDepartment(collegeDepartment)) {
+            Toast.makeText(DepartmentListActivity.this, "Unable to delete department: " + name, Toast.LENGTH_LONG).show();
             return;
         }
-        collegeCourseList.remove(position);
-        rvAdapter.notifyItemRemoved(position);
-        Toast.makeText(CourseListActivity.this, "Removed " + name, Toast.LENGTH_LONG).show();
+        collegeDepartmentList.remove(position);
+        departmentAdapter.notifyItemRemoved(position);
+        Toast.makeText(DepartmentListActivity.this, "Removed " + name, Toast.LENGTH_LONG).show();
     }
 
     @Override

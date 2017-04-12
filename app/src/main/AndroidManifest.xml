@@ -8,15 +8,18 @@
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".MainActivity">
+        <activity android:name=".DepartmentListActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name="com.jrsqlite.DetailsActivity" />
+        <activity android:name="com.jrsqlite.CourseDetailsActivity" />
+        <activity android:name="com.jrsqlite.DepartmentDetailsActivity" />
         <activity android:name="com.jrsqlite.NewCourseActivity" />
+        <activity android:name="com.jrsqlite.CourseListActivity" />
+        <activity android:name="com.jrsqlite.NewDepartmentActivity" />
     </application>
 
 </manifest>

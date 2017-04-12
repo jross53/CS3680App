@@ -14,7 +14,7 @@ public class NewCourseActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.new_activity_details);
+        setContentView(R.layout.new_course_activity_details);
 
 //        TextView nameTextView = (TextView) findViewById(R.id.name_text_view);
 //        nameTextView.setText("Name: " + name);

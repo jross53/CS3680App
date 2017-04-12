@@ -7,7 +7,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
-public class DetailsActivity extends AppCompatActivity {
+public class CourseDetailsActivity extends AppCompatActivity {
 
     private final int DELETED_COURSE = 3;
 

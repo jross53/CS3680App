@@ -6,7 +6,7 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.util.Log;
 
-import com.jrsqlite.CollegeCourse;
+import com.jrsqlite.CollegeDepartment;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -15,37 +15,31 @@ import java.util.List;
  * Created by Jordan.Ross on 2/28/2017.
  */
 
-public class CourseDAO {
+public class DepartmentDAO {
 
-    private static final String COURSE_DAO = "CourseDAO";
+    private static final String DEPARTMENT_TAG = "DepartmentDAO";
     private SQLiteDatabase db;
     private static String[] ALL_COLUMNS = {
-            CourseContract.CourseEntry._ID,
-            CourseContract.CourseEntry.COLUMN_NAME,
-            CourseContract.CourseEntry.COLUMN_INSTRUCTOR,
-            CourseContract.CourseEntry.COLUMN_NUMBER,
-            CourseContract.CourseEntry.COLUMN_CAPACITY
+            DepartmentContract.DepartmentEntry._ID,
+            DepartmentContract.DepartmentEntry.COLUMN_NAME,
     };
 
-    public CourseDAO(final Context context) {
-        final CourseDbHelper mDbHelper = new CourseDbHelper(context);
+    public DepartmentDAO(final Context context) {
+        final DepartmentDbHelper mDbHelper = new DepartmentDbHelper(context);
         db = mDbHelper.getWritableDatabase();
     }
 
-    public boolean saveCourse(final CollegeCourse collegeCourse) {
+    public boolean saveDepartment(final CollegeDepartment collegeDepartment) {
         ContentValues values = new ContentValues();
-        values.put(CourseContract.CourseEntry.COLUMN_NAME, collegeCourse.getName());
-        values.put(CourseContract.CourseEntry.COLUMN_INSTRUCTOR, collegeCourse.getInstructor());
-        values.put(CourseContract.CourseEntry.COLUMN_NUMBER, collegeCourse.getNumber());
-        values.put(CourseContract.CourseEntry.COLUMN_CAPACITY, collegeCourse.getCapacity());
+        values.put(DepartmentContract.DepartmentEntry.COLUMN_NAME, collegeDepartment.getName());
 
-        long newRowId = db.insert(CourseContract.CourseEntry.TABLE_NAME, null, values);
+        long newRowId = db.insert(DepartmentContract.DepartmentEntry.TABLE_NAME, null, values);
         return newRowId > 0;
     }
 
     private Cursor getCursorForSelect(final String selection, final String[] selectionArgs) {
         Cursor cursor = db.query(
-                CourseContract.CourseEntry.TABLE_NAME,                     // The table to query
+                DepartmentContract.DepartmentEntry.TABLE_NAME,                     // The table to query
                 ALL_COLUMNS,                               // The columns to return
                 selection,                                // The columns for the WHERE clause
                 selectionArgs,                            // The values for the WHERE clause
@@ -54,67 +48,44 @@ public class CourseDAO {
                 null                                 // The sort order
         );
 
-        Log.i(COURSE_DAO, "Found  " + cursor.getCount() + " courses");
+        Log.i(DEPARTMENT_TAG, "Found  " + cursor.getCount() + " departments");
 
         return cursor;
     }
 
-    private List<CollegeCourse> findAllBy(final String selection,
+    private List<CollegeDepartment> findAllBy(final String selection,
                                           final String[] selectionArgs) {
-        List<CollegeCourse> collegeCourseList = new ArrayList<>();
+        List<CollegeDepartment> collegeDepartmentList = new ArrayList<>();
         Cursor cursor = getCursorForSelect(selection, selectionArgs);
 
         while (cursor.moveToNext()) {
+            int id = cursor.getInt(0);
             String name = cursor.getString(1);
-            String instructor = cursor.getString(2);
-            String number = cursor.getString(3);
-            int capacity = cursor.getInt(4);
-            CollegeCourse collegeCourse = new CollegeCourse(name, capacity, instructor, number);
-            collegeCourseList.add(collegeCourse);
-//            Log.i(COURSE_DAO, "name: " + name + " instructor: " + instructor + " number: " + number + " capacity: " + capacity);
+            CollegeDepartment collegeDepartment = new CollegeDepartment(name);
+            collegeDepartmentList.add(collegeDepartment);
+            Log.i(DEPARTMENT_TAG, "name: " + name + " id: " + id);
         }
         cursor.close();
 
-        return collegeCourseList;
+        return collegeDepartmentList;
     }
 
-    public List<CollegeCourse> findAll() {
+    public List<CollegeDepartment> findAll() {
         return findAllBy(null, null);
     }
 
-    public List<CollegeCourse> findAllByName(final String name) {
-        String selection = CourseContract.CourseEntry.COLUMN_NAME + " LIKE ?";
+    public List<CollegeDepartment> findAllByName(final String name) {
+        String selection = DepartmentContract.DepartmentEntry.COLUMN_NAME + " LIKE ?";
         String[] selectionArgs = {"%" + name + "%"};
 
         return findAllBy(selection, selectionArgs);
     }
 
-    public List<CollegeCourse> findAllByNumber(final String number) {
-        String selection = CourseContract.CourseEntry.COLUMN_NUMBER + " LIKE ?";
-        String[] selectionArgs = {"%" + number + "%"};
-
-        return findAllBy(selection, selectionArgs);
-    }
-
-    public List<CollegeCourse> findAllByInstructor(final String instructor) {
-        String selection = CourseContract.CourseEntry.COLUMN_INSTRUCTOR + " LIKE ?";
-        String[] selectionArgs = {"%" + instructor + "%"};
-
-        return findAllBy(selection, selectionArgs);
-    }
-
-    public List<CollegeCourse> findAllByCapacity(final int capacity) {
-        String selection = CourseContract.CourseEntry.COLUMN_CAPACITY + " LIKE ?";
-        String[] selectionArgs = {String.valueOf(capacity)};
-
-        return findAllBy(selection, selectionArgs);
-    }
-
-    public boolean insertTestCourses() {
-        final List<CollegeCourse> collegeCourses = getTestCollegeCourseList();
-        for (CollegeCourse collegeCourse : collegeCourses) {
-            if (!saveCourse(collegeCourse)) {
-                deleteAllCourses();
+    public boolean insertTestDepartments() {
+        final List<CollegeDepartment> collegeDepartments = getTestCollegeDepartmentList();
+        for (CollegeDepartment collegeDepartment : collegeDepartments) {
+            if (!saveDepartment(collegeDepartment)) {
+                deleteAllDepartments();
                 return false;
             }
         }
@@ -122,41 +93,28 @@ public class CourseDAO {
         return true;
     }
 
-    public boolean deleteAllCourses() {
-        int numberOfRowsDeleted = db.delete(CourseContract.CourseEntry.TABLE_NAME, null, null);
-        Log.i(COURSE_DAO, numberOfRowsDeleted + " rows deleted");
+    public boolean deleteAllDepartments() {
+        int numberOfRowsDeleted = db.delete(DepartmentContract.DepartmentEntry.TABLE_NAME, null, null);
+        Log.i(DEPARTMENT_TAG, numberOfRowsDeleted + " rows deleted");
         return numberOfRowsDeleted > -1;
     }
 
-    public boolean deleteCourse(final CollegeCourse collegeCourse) {
-        int numberOfRowsDeleted = db.delete(CourseContract.CourseEntry.TABLE_NAME, "name = ? ", new String[] { collegeCourse.getName() });
-        Log.i(COURSE_DAO, numberOfRowsDeleted + " rows deleted");
+    public boolean deleteDepartment(final CollegeDepartment collegeDepartment) {
+        int numberOfRowsDeleted = db.delete(DepartmentContract.DepartmentEntry.TABLE_NAME, "name = ? ", new String[] { collegeDepartment.getName() });
+        Log.i(DEPARTMENT_TAG, numberOfRowsDeleted + " rows deleted");
         return numberOfRowsDeleted == 1;
     }
 
-    private List<CollegeCourse> getTestCollegeCourseList() {
-        List<CollegeCourse> collegeCourses = new ArrayList<>();
-        collegeCourses.add(new CollegeCourse("Mobile App Development", 35, "Durney", "CS 3680"));
-        collegeCourses.add(new CollegeCourse("Discrete Structures", 25, "Jack", "CS 3681"));
-        collegeCourses.add(new CollegeCourse("Data Structures", 10, "Smoot", "CS 3682"));
-        collegeCourses.add(new CollegeCourse("Intro to programming", 45, "Smit", "CS 3683"));
-        collegeCourses.add(new CollegeCourse("Intro to computers", 30, "Stevens", "CS 3684"));
-        collegeCourses.add(new CollegeCourse("Programming in Assembly", 35, "Clark", "CS 3685"));
-        collegeCourses.add(new CollegeCourse("Web Development", 35, "Jeter", "CS 3686"));
-        collegeCourses.add(new CollegeCourse("Database Theory", 35, "Bryant", "CS 3687"));
-        collegeCourses.add(new CollegeCourse("MongoDB", 35, "Curry", "CS 3688"));
-        collegeCourses.add(new CollegeCourse("Linux Administration", 40, "Johnson", "CS 3689"));
-        collegeCourses.add(new CollegeCourse("Advanced Python", 35, "Smith", "CS 3690"));
-        collegeCourses.add(new CollegeCourse("Advanced Java", 35, "Benji", "CS 3691"));
-        collegeCourses.add(new CollegeCourse("Advanced C++", 25, "Durney", "CS 3692"));
-        collegeCourses.add(new CollegeCourse("Advanced C#", 45, "Matthews", "CS 3693"));
-        collegeCourses.add(new CollegeCourse("Windows Administration", 35, "Jeffries", "CS 3694"));
-        collegeCourses.add(new CollegeCourse("Docker", 35, "Sky", "CS 3695"));
-        collegeCourses.add(new CollegeCourse("Discrete Math", 30, "Max", "CS 3696"));
-        collegeCourses.add(new CollegeCourse("Big Data", 30, "Griffin", "CS 3697"));
-        collegeCourses.add(new CollegeCourse("Artificial Intelligence", 35, "Jordan", "CS 3698"));
-        collegeCourses.add(new CollegeCourse("Compilers", 40, "Jabbar", "CS 3699"));
+    private List<CollegeDepartment> getTestCollegeDepartmentList() {
+        List<CollegeDepartment> collegeDepartments = new ArrayList<>();
+        collegeDepartments.add(new CollegeDepartment("Computer Science"));
+        collegeDepartments.add(new CollegeDepartment("Graphical Design"));
+        collegeDepartments.add(new CollegeDepartment("Networking"));
+        collegeDepartments.add(new CollegeDepartment("Information Technology"));
+        collegeDepartments.add(new CollegeDepartment("Electrical Engineering"));
+        collegeDepartments.add(new CollegeDepartment("Cyber Security"));
+        collegeDepartments.add(new CollegeDepartment("Computer Engineering"));
 
-        return collegeCourses;
+        return collegeDepartments;
     }
 }

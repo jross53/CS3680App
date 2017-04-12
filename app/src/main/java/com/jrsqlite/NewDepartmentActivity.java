@@ -7,7 +7,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
-public class NewCourseActivity extends AppCompatActivity {
+public class NewDepartmentActivity extends AppCompatActivity {
 
     private final int ADDED_COURSE = 4;
 
@@ -28,7 +28,7 @@ public class NewCourseActivity extends AppCompatActivity {
 //        TextView numberTextView = (TextView) findViewById(R.id.number_text_view);
 //        numberTextView.setText("Number: " + number);
 
-        Button button = (Button) findViewById(R.id.add_course_button);
+        Button button = (Button) findViewById(R.id.add_course_button);//todo I left off here, working on adding a new department. Delete and view is working
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

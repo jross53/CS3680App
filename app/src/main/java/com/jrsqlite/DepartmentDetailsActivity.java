@@ -7,41 +7,28 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
-public class CourseDetailsActivity extends AppCompatActivity {
+public class DepartmentDetailsActivity extends AppCompatActivity {
 
     private final int DELETED_COURSE = 3;
 
     private String name;
-    private String instructor;
-    private int capacity;
-    private String number;
+    private int id;
     private int position;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         Bundle extras = getIntent().getExtras();
         name = extras.getString("name");
-        instructor = extras.getString("instructor");
-        capacity = extras.getInt("capacity");
-        number = extras.getString("number");
+        id = extras.getInt("id");
         position = extras.getInt("position");
 
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_course_details);
+        setContentView(R.layout.activity_department_details);
 
-        TextView nameTextView = (TextView) findViewById(R.id.name_text_view);
+        TextView nameTextView = (TextView) findViewById(R.id.department_name_text_view);
         nameTextView.setText("Name: " + name);
 
-        TextView instructorTextView = (TextView) findViewById(R.id.instructor_text_view);
-        instructorTextView.setText("Instructor: " + instructor);
-
-        TextView capacityTextView = (TextView) findViewById(R.id.capacity_text_view);
-        capacityTextView.setText("Capacity: " + capacity);
-
-        TextView numberTextView = (TextView) findViewById(R.id.number_text_view);
-        numberTextView.setText("Number: " + number);
-
-        Button button = (Button) findViewById(R.id.delete_course_button);
+        Button button = (Button) findViewById(R.id.delete_department_button);
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

@@ -1,3 +1,8 @@
 <resources>
     <string name="app_name">JRSqlite</string>
+    <string name="search_for_department">Search for department</string>
+    <string name="search">Search</string>
+    <string name="clear_filter">Clear Filter</string>
+    <string name="view_courses">View Courses</string>
+    <string name="delete">Delete</string>
 </resources>

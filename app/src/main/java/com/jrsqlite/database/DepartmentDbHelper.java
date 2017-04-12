@@ -8,22 +8,19 @@ import android.database.sqlite.SQLiteOpenHelper;
  * Created by Jordan.Ross on 2/25/2017.
  */
 
-public class CourseDbHelper extends SQLiteOpenHelper {
+public class DepartmentDbHelper extends SQLiteOpenHelper {
     // If you change the database schema, you must increment the database version.
-    public static final int DATABASE_VERSION = 2;
-    public static final String DATABASE_NAME = "CourseList.db";
+    public static final int DATABASE_VERSION = 3;
+    public static final String DATABASE_NAME = "DepartmentList.db";
     private static final String SQL_CREATE_ENTRIES =
-            "CREATE TABLE " + CourseContract.CourseEntry.TABLE_NAME + " (" +
-                    CourseContract.CourseEntry._ID + " INTEGER PRIMARY KEY NOT NULL," +
-                    CourseContract.CourseEntry.COLUMN_NAME + " TEXT NOT NULL," +
-                    CourseContract.CourseEntry.COLUMN_INSTRUCTOR + " TEXT NOT NULL," +
-                    CourseContract.CourseEntry.COLUMN_NUMBER + " TEXT NOT NULL," +
-                    CourseContract.CourseEntry.COLUMN_CAPACITY + ")";
+            "CREATE TABLE " + DepartmentContract.DepartmentEntry.TABLE_NAME + " (" +
+                    DepartmentContract.DepartmentEntry._ID + " INTEGER PRIMARY KEY NOT NULL," +
+                    DepartmentContract.DepartmentEntry.COLUMN_NAME + " TEXT NOT NULL"+ ")";
 
     private static final String SQL_DELETE_ENTRIES =
-            "DROP TABLE IF EXISTS " + CourseContract.CourseEntry.TABLE_NAME;
+            "DROP TABLE IF EXISTS " + DepartmentContract.DepartmentEntry.TABLE_NAME;
 
-    public CourseDbHelper(Context context) {
+    public DepartmentDbHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
     }
 
