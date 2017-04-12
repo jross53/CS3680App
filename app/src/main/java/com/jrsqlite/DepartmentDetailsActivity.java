@@ -7,7 +7,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
-public class DetailsActivity extends AppCompatActivity {
+public class CourseDetailsActivity extends AppCompatActivity {
 
     private final int DELETED_COURSE = 3;
 
@@ -27,7 +27,7 @@ public class DetailsActivity extends AppCompatActivity {
         position = extras.getInt("position");
 
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_details);
+        setContentView(R.layout.activity_course_details);
 
         TextView nameTextView = (TextView) findViewById(R.id.name_text_view);
         nameTextView.setText("Name: " + name);

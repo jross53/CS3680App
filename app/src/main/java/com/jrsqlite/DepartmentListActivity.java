@@ -25,7 +25,7 @@ import com.jrsqlite.database.CourseDAO;
 
 import java.util.List;
 
-public class MainActivity extends AppCompatActivity {
+public class CourseListActivity extends AppCompatActivity {
     private RecyclerView recyclerView;
     private RVAdapter rvAdapter;
     private final int DELETED_COURSE = 3;
@@ -39,7 +39,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.activity_college_courses);
 
         courseDAO = new CourseDAO(getApplicationContext());
         generateNewCollegeCourseListFromDatabase();
@@ -88,14 +88,14 @@ public class MainActivity extends AppCompatActivity {
                         try {
                             capacityToFilterBy = Integer.parseInt(valueToFilterBy);
                         } catch (NumberFormatException ex) {
-                            Toast.makeText(MainActivity.this, "Please enter a valid number", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(CourseListActivity.this, "Please enter a valid number", Toast.LENGTH_SHORT).show();
                             return;
                         }
 
                         collegeCourseList = courseDAO.findAllByCapacity(capacityToFilterBy);
                         break;
                     default:
-                        Toast.makeText(MainActivity.this, "Unknown filter: " + fieldToFilterBy, Toast.LENGTH_SHORT).show();
+                        Toast.makeText(CourseListActivity.this, "Unknown filter: " + fieldToFilterBy, Toast.LENGTH_SHORT).show();
                         return;
                 }
                 rvAdapter.notifyDataSetChanged();
@@ -108,7 +108,7 @@ public class MainActivity extends AppCompatActivity {
         addNewButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(MainActivity.this, NewCourseActivity.class);
+                Intent intent = new Intent(CourseListActivity.this, NewCourseActivity.class);
                 startActivityForResult(intent, ADDED_COURSE);
             }
         });
@@ -120,7 +120,7 @@ public class MainActivity extends AppCompatActivity {
             boolean testCoursesWereInserted = courseDAO.insertTestCourses();
             if (!testCoursesWereInserted) {
                 String unableToInsertCoursesMessage = "Unable to insert test courses";
-                Log.e("MainActivity", unableToInsertCoursesMessage);
+                Log.e("CourseListActivity", unableToInsertCoursesMessage);
                 return;
             }
             collegeCourseList = courseDAO.findAll();
@@ -168,12 +168,12 @@ public class MainActivity extends AppCompatActivity {
             view.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    Intent intent = new Intent(MainActivity.this, DetailsActivity.class);
+                    Intent intent = new Intent(CourseListActivity.this, DetailsActivity.class);
                     Bundle bundle = new Bundle();
                     String name = ((AppCompatTextView) v).getText().toString();
                     CollegeCourse collegeCourse = getCollegeCourse(name);
                     if (collegeCourse == null) {
-                        Toast.makeText(MainActivity.this,
+                        Toast.makeText(CourseListActivity.this,
                                 "There was a problem finding " + name, Toast.LENGTH_LONG).show();
                         return;
                     }
@@ -183,7 +183,7 @@ public class MainActivity extends AppCompatActivity {
                     bundle.putString("number", collegeCourse.getNumber());
                     int indexOfCourse = getIndexOfCourse(collegeCourse);
                     if (indexOfCourse == -1) {
-                        Log.e("MainActivity", "Unabled to get index of course: "
+                        Log.e("CourseListActivity", "Unabled to get index of course: "
                                 + collegeCourse.getName());
                         return;
                     }
@@ -202,7 +202,7 @@ public class MainActivity extends AppCompatActivity {
                     return collegeCourse;
                 }
             }
-            Log.e("MainActivity", "Unable to find college course: " + name);
+            Log.e("CourseListActivity", "Unable to find college course: " + name);
             return null;
         }
 
@@ -253,7 +253,7 @@ public class MainActivity extends AppCompatActivity {
             collegeCourseList.add(0, collegeCourse);
             rvAdapter.notifyItemInserted(0);
             recyclerView.getLayoutManager().scrollToPosition(0);
-            Toast.makeText(MainActivity.this, "Added " + courseName, Toast.LENGTH_LONG).show();
+            Toast.makeText(CourseListActivity.this, "Added " + courseName, Toast.LENGTH_LONG).show();
         }
 
     }
@@ -262,12 +262,12 @@ public class MainActivity extends AppCompatActivity {
         CollegeCourse collegeCourse = collegeCourseList.get(position);
         String name = collegeCourse.getName();
         if(!courseDAO.deleteCourse(collegeCourse)) {
-            Toast.makeText(MainActivity.this, "Unable to delete course: " + name, Toast.LENGTH_LONG).show();
+            Toast.makeText(CourseListActivity.this, "Unable to delete course: " + name, Toast.LENGTH_LONG).show();
             return;
         }
         collegeCourseList.remove(position);
         rvAdapter.notifyItemRemoved(position);
-        Toast.makeText(MainActivity.this, "Removed " + name, Toast.LENGTH_LONG).show();
+        Toast.makeText(CourseListActivity.this, "Removed " + name, Toast.LENGTH_LONG).show();
     }
 
     @Override
