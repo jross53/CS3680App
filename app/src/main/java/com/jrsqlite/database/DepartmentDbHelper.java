@@ -10,7 +10,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 
 public class DepartmentDbHelper extends SQLiteOpenHelper {
     // If you change the database schema, you must increment the database version.
-    public static final int DATABASE_VERSION = 3;
+    public static final int DATABASE_VERSION = 4;
     public static final String DATABASE_NAME = "DepartmentList.db";
     private static final String SQL_CREATE_ENTRIES =
             "CREATE TABLE " + DepartmentContract.DepartmentEntry.TABLE_NAME + " (" +

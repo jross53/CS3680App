@@ -25,12 +25,12 @@
             android:paddingBottom="16dp">
 
             <TextView
-                android:textSize="40sp"
-                android:text="Course Info"
+                android:id="@+id/department_title_text_view"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:id="@+id/title_text_view"
-                tools:text="Course Info" />
+                android:text="@string/new_department"
+                android:textSize="40sp"
+                tools:text="New Department" />
         </TableRow>
 
         <TableRow
@@ -41,62 +41,12 @@
             android:minHeight="40dp">
 
             <EditText
+                android:id="@+id/edit_department_name_text_view"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:inputType="textPersonName"
                 android:ems="10"
-                android:id="@+id/edit_name_text_view"
-                android:hint="Enter Course Name" />
-
-        </TableRow>
-
-        <TableRow
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:id="@+id/new_instructor_row"
-            android:orientation="horizontal"
-            android:minHeight="40dp">
-
-            <EditText
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:inputType="textPersonName"
-                android:ems="10"
-                android:id="@+id/new_instructor_edit_text_view"
-                android:hint="Enter Instructor" />
-
-        </TableRow>
-
-        <TableRow
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:id="@+id/new_capacity_row"
-            android:orientation="horizontal"
-            android:minHeight="40dp">
-
-            <EditText
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:inputType="number"
-                android:ems="10"
-                android:id="@+id/new_capacity_edit_text_view"
-                android:hint="Enter Capacity" />
-        </TableRow>
-
-        <TableRow
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:id="@+id/new_number_row"
-            android:orientation="horizontal"
-            android:minHeight="40dp">
-
-            <EditText
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:inputType="textPersonName"
-                android:ems="10"
-                android:id="@+id/new_number_edit_view"
-                android:hint="Enter Course Number" />
+                android:hint="@string/enter_department_name"
+                android:inputType="textPersonName" />
 
         </TableRow>
 
@@ -109,11 +59,11 @@
             android:paddingTop="16dp">
 
             <Button
-                android:text="Save"
+                android:id="@+id/add_department_button"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:id="@+id/add_course_button"
-                android:background="@android:color/holo_blue_light" />
+                android:background="@android:color/holo_blue_light"
+                android:text="@string/save" />
         </TableRow>
     </TableLayout>
 </RelativeLayout>

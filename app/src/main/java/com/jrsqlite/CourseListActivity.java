@@ -2,6 +2,7 @@ package com.jrsqlite;
 
 import android.content.Context;
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.AppCompatTextView;
@@ -22,7 +23,10 @@ import android.widget.Toast;
 
 import com.jrsqlite.database.CourseContract;
 import com.jrsqlite.database.CourseDAO;
+import com.jrsqlite.database.DepartmentConstants;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class CourseListActivity extends AppCompatActivity {
@@ -34,20 +38,46 @@ public class CourseListActivity extends AppCompatActivity {
     private List<CollegeCourse> collegeCourseList;
     private Spinner spinner;
     private CourseDAO courseDAO;
+    private int currentDepartmentId;
+    List<CollegeCourse> allCourses;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_college_courses);
-
         courseDAO = new CourseDAO(getApplicationContext());
-        generateNewCollegeCourseListFromDatabase();
+        checkForTestCourses();
+
+        Bundle extras = getIntent().getExtras();
+        currentDepartmentId = extras.getInt(DepartmentConstants.CURRENT_DEPARTMENT_ID);
+        ArrayList<Integer> removedDepartments = extras.getIntegerArrayList("removedDepartments");
+
+
+        Log.i(AppConstants.APP_TAG, "CourseListActivity, current department id: "
+                + currentDepartmentId);
+
         createSpinner();
+
+        courseDAO.deleteOrphanedCourses(removedDepartments);
         createRecyclerView();
         addClickEventToAddNewButton();
         addClickEventToFilterButton();
         addClickEventToClearFilterText();
+    }
+
+    private void checkForTestCourses() {
+        try {
+            allCourses = courseDAO.findAll();
+            if (allCourses == null || allCourses.size() == 0) {
+                Toast.makeText(CourseListActivity.this, "Generating test courses. Please wait...", Toast.LENGTH_LONG).show();
+            }
+
+            LoadCoursesTask loadCoursesTask = new LoadCoursesTask();
+            loadCoursesTask.execute();
+        } catch (Exception ex) {
+            Log.e(AppConstants.APP_TAG, "Error checking for test courses: " + ex.getMessage());
+        }
     }
 
     private void addClickEventToClearFilterText() {
@@ -57,7 +87,7 @@ public class CourseListActivity extends AppCompatActivity {
             public void onClick(View v) {
                 EditText filterEditText = (EditText) findViewById(R.id.filter_edit_text);
                 filterEditText.setText("");
-                collegeCourseList = courseDAO.findAll();
+                collegeCourseList = courseDAO.findAllByDepartment(currentDepartmentId);
                 rvAdapter.notifyDataSetChanged();
             }
         });
@@ -68,20 +98,20 @@ public class CourseListActivity extends AppCompatActivity {
         filterButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
+                InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
                 imm.hideSoftInputFromWindow(v.getWindowToken(), 0);
                 String fieldToFilterBy = spinner.getSelectedItem().toString().toLowerCase();
                 EditText filterEditText = (EditText) findViewById(R.id.filter_edit_text);
                 String valueToFilterBy = filterEditText.getText().toString();
                 switch (fieldToFilterBy) {
                     case "course name":
-                        collegeCourseList = courseDAO.findAllByName(valueToFilterBy);
+                        collegeCourseList = courseDAO.findAllByName(valueToFilterBy, currentDepartmentId);
                         break;
                     case CourseContract.CourseEntry.COLUMN_INSTRUCTOR:
-                        collegeCourseList = courseDAO.findAllByInstructor(valueToFilterBy);
+                        collegeCourseList = courseDAO.findAllByInstructor(valueToFilterBy, currentDepartmentId);
                         break;
                     case CourseContract.CourseEntry.COLUMN_NUMBER:
-                        collegeCourseList = courseDAO.findAllByNumber(valueToFilterBy);
+                        collegeCourseList = courseDAO.findAllByNumber(valueToFilterBy, currentDepartmentId);
                         break;
                     case CourseContract.CourseEntry.COLUMN_CAPACITY:
                         int capacityToFilterBy;
@@ -92,7 +122,7 @@ public class CourseListActivity extends AppCompatActivity {
                             return;
                         }
 
-                        collegeCourseList = courseDAO.findAllByCapacity(capacityToFilterBy);
+                        collegeCourseList = courseDAO.findAllByCapacity(capacityToFilterBy, currentDepartmentId);
                         break;
                     default:
                         Toast.makeText(CourseListActivity.this, "Unknown filter: " + fieldToFilterBy, Toast.LENGTH_SHORT).show();
@@ -114,23 +144,18 @@ public class CourseListActivity extends AppCompatActivity {
         });
     }
 
-    private void generateNewCollegeCourseListFromDatabase() {
-        List<CollegeCourse> existingCollegeCourses = courseDAO.findAll();
-        if(existingCollegeCourses == null || existingCollegeCourses.size() == 0) {
+    private List<CollegeCourse> generateNewCollegeCourseListFromDatabase() {
+        if (allCourses == null || allCourses.size() == 0) {
+            Log.i(AppConstants.APP_TAG, "Generating test courses");
             boolean testCoursesWereInserted = courseDAO.insertTestCourses();
             if (!testCoursesWereInserted) {
                 String unableToInsertCoursesMessage = "Unable to insert test courses";
-                Log.e("CourseListActivity", unableToInsertCoursesMessage);
-                return;
+                Log.e(AppConstants.APP_TAG, unableToInsertCoursesMessage);
+                return null;
             }
-            collegeCourseList = courseDAO.findAll();
-        } else {
-            collegeCourseList = existingCollegeCourses;
         }
 
-
-
-        collegeCourseList = courseDAO.findAll();
+        return courseDAO.findAllByDepartment(currentDepartmentId);
     }
 
     private void createRecyclerView() {
@@ -183,7 +208,7 @@ public class CourseListActivity extends AppCompatActivity {
                     bundle.putString("number", collegeCourse.getNumber());
                     int indexOfCourse = getIndexOfCourse(collegeCourse);
                     if (indexOfCourse == -1) {
-                        Log.e("CourseListActivity", "Unable to get index of course: "
+                        Log.e(AppConstants.APP_TAG, "Unable to get index of course: "
                                 + collegeCourse.getName());
                         return;
                     }
@@ -202,7 +227,7 @@ public class CourseListActivity extends AppCompatActivity {
                     return collegeCourse;
                 }
             }
-            Log.e("CourseListActivity", "Unable to find college course: " + name);
+            Log.e(AppConstants.APP_TAG, "Unable to find college course: " + name);
             return null;
         }
 
@@ -236,20 +261,29 @@ public class CourseListActivity extends AppCompatActivity {
         }
         int result = data.getIntExtra("result", 9);
         if (result == DELETED_COURSE) {
+            Log.i(AppConstants.APP_TAG, "Received delete course result");
             int position = data.getIntExtra("position", -1);
             if (position > -1) {
                 removeAt(position);
                 rvAdapter.notifyDataSetChanged();
                 recyclerView.getLayoutManager().scrollToPosition(0);
+                Toast.makeText(CourseListActivity.this, "Removed course", Toast.LENGTH_SHORT).show();
             }
         } else if (result == ADDED_COURSE) {
+            Log.i(AppConstants.APP_TAG, "Received add course result");
+
             String courseName = data.getStringExtra("name");
             String instructor = data.getStringExtra("instructor");
             int capacity = data.getIntExtra("capacity", 30);
             String courseNumber = data.getStringExtra("number");
+            CollegeCourse collegeCourse = new CollegeCourse(courseName, capacity, instructor, courseNumber, currentDepartmentId);
+            int id = courseDAO.saveCourse(collegeCourse);
 
-            CollegeCourse collegeCourse = new CollegeCourse(courseName, capacity, instructor, courseNumber);
-            courseDAO.saveCourse(collegeCourse);
+            if (id == -1) {
+                return;
+            }
+
+            collegeCourse.setId(id);
             collegeCourseList.add(0, collegeCourse);
             rvAdapter.notifyItemInserted(0);
             recyclerView.getLayoutManager().scrollToPosition(0);
@@ -261,7 +295,7 @@ public class CourseListActivity extends AppCompatActivity {
     public void removeAt(int position) {
         CollegeCourse collegeCourse = collegeCourseList.get(position);
         String name = collegeCourse.getName();
-        if(!courseDAO.deleteCourse(collegeCourse)) {
+        if (!courseDAO.deleteCourse(collegeCourse.getId())) {
             Toast.makeText(CourseListActivity.this, "Unable to delete course: " + name, Toast.LENGTH_LONG).show();
             return;
         }
@@ -273,5 +307,46 @@ public class CourseListActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
+    }
+
+
+    private class LoadCoursesTask extends AsyncTask<String /*<-- params for doInBackground*/,
+            Integer,
+            List<CollegeCourse> /*<-- return type of doInBackground and parameter of onPostExecute*/> {
+
+
+        @Override
+        protected List<CollegeCourse> doInBackground(String... params) {
+            try {
+                return generateNewCollegeCourseListFromDatabase();
+            } catch (Exception ex) {
+                Log.e(AppConstants.APP_TAG, "There was a problem getting courses: " +
+                        Arrays.toString(ex.getStackTrace()));
+            }
+
+            return null;
+        }
+
+        /**
+         * Executes on the main thread
+         *
+         * @param result is the return value of doInBackground()
+         */
+        @Override
+        protected void onPostExecute(List<CollegeCourse> result) {
+            if (result == null) {
+                collegeCourseList = new ArrayList<>();
+                Log.i(AppConstants.APP_TAG, "No courses for department: " + currentDepartmentId);
+                rvAdapter.notifyDataSetChanged();
+                return;
+            }
+            try {
+                collegeCourseList = result;
+                Log.i(AppConstants.APP_TAG, "Done populating UI");
+                rvAdapter.notifyDataSetChanged();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
     }
 }

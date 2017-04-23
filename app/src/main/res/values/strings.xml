@@ -5,4 +5,8 @@
     <string name="clear_filter">Clear Filter</string>
     <string name="view_courses">View Courses</string>
     <string name="delete">Delete</string>
+    <string name="new_department">New Department</string>
+    <string name="enter_department_name">Enter Department Name</string>
+    <string name="save">Save</string>
+    <string name="enter_capacity">Enter Capacity</string>
 </resources>

@@ -20,6 +20,7 @@ import android.widget.Toast;
 
 import com.jrsqlite.database.DepartmentDAO;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class DepartmentListActivity extends AppCompatActivity {
@@ -87,18 +88,17 @@ public class DepartmentListActivity extends AppCompatActivity {
     private void generateNewCollegeDepartmentListFromDatabase() {
         List<CollegeDepartment> existingCollegeDepartments = departmentDAO.findAll();
         if(existingCollegeDepartments == null || existingCollegeDepartments.size() == 0) {
+            Log.i(AppConstants.APP_TAG, "Generating test departments");
             boolean testDepartmentsWereInserted = departmentDAO.insertTestDepartments();
             if (!testDepartmentsWereInserted) {
                 String unableToInsertDepartmentsMessage = "Unable to insert test departments";
-                Log.e("DepartmentListActivity", unableToInsertDepartmentsMessage);
+                Log.e(AppConstants.APP_TAG, unableToInsertDepartmentsMessage);
                 return;
             }
             collegeDepartmentList = departmentDAO.findAll();
         } else {
             collegeDepartmentList = existingCollegeDepartments;
         }
-
-
 
         collegeDepartmentList = departmentDAO.findAll();
     }
@@ -142,11 +142,13 @@ public class DepartmentListActivity extends AppCompatActivity {
                     bundle.putString("name", collegeDepartment.getName());
                     int indexOfDepartment = getIndexOfDepartment(collegeDepartment);
                     if (indexOfDepartment == -1) {
-                        Log.e("DepartmentListActivity", "Unable to get index of department: "
+                        Log.e(AppConstants.APP_TAG, "Unable to get index of department: "
                                 + collegeDepartment.getName());
                         return;
                     }
                     bundle.putInt("position", indexOfDepartment);
+                    bundle.putInt("id", collegeDepartment.getId());
+                    bundle.putIntegerArrayList("removedDepartments", removedDepartments);
                     intent.putExtras(bundle);
                     startActivityForResult(intent, DELETED_DEPARTMENT);
                 }
@@ -161,7 +163,7 @@ public class DepartmentListActivity extends AppCompatActivity {
                     return collegeDepartment;
                 }
             }
-            Log.e("DepartmentListActivity", "Unable to find college department: " + name);
+            Log.e(AppConstants.APP_TAG, "Unable to find college department: " + name);
             return null;
         }
 
@@ -212,12 +214,16 @@ public class DepartmentListActivity extends AppCompatActivity {
 
     }
 
+    ArrayList<Integer> removedDepartments = new ArrayList<>();
+
     public void removeAt(int position) {
         CollegeDepartment collegeDepartment = collegeDepartmentList.get(position);
         String name = collegeDepartment.getName();
         if(!departmentDAO.deleteDepartment(collegeDepartment)) {
             Toast.makeText(DepartmentListActivity.this, "Unable to delete department: " + name, Toast.LENGTH_LONG).show();
             return;
+        } else {
+            removedDepartments.add(collegeDepartment.getId());
         }
         collegeDepartmentList.remove(position);
         departmentAdapter.notifyItemRemoved(position);

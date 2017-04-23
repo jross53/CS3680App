@@ -12,6 +12,11 @@ public class CollegeDepartment {
         this.name = name;
     }
 
+    public CollegeDepartment(String name, int id) {
+        this.name = name;
+        this.id = id;
+    }
+
     public String getName() {
         return name;
     }
