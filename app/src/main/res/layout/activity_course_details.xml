@@ -13,9 +13,10 @@
     <TableLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:id="@+id/course_table"
         android:layout_alignParentTop="true"
-        android:layout_alignParentStart="true"
-        android:id="@+id/course_table">
+        android:layout_alignParentStart="true">
+
 
         <TableRow
             android:layout_width="match_parent"
@@ -39,6 +40,7 @@
             android:id="@+id/name_row"
             android:orientation="horizontal"
             android:minHeight="40dp">
+
 
             <TextView
                 android:textSize="25sp"
@@ -95,14 +97,68 @@
             android:id="@+id/button_row"
             android:orientation="horizontal"
             android:minHeight="40dp"
-            android:paddingTop="16dp">
+            android:paddingTop="16dp"
+            android:paddingBottom="20dp">
 
             <Button
-                android:text="Delete"
+                android:text="@string/delete"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:id="@+id/delete_course_button"
                 android:background="@android:color/holo_orange_light" />
+
         </TableRow>
+
+        <TableRow
+            android:id="@+id/move_to_department_spinner_text_row"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <TextView
+                android:id="@+id/move_to_department_spinner_edit_text"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:text="@string/move_to_department" />
+        </TableRow>
+
+        <TableRow
+            android:id="@+id/move_to_department_spinner_row"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <Spinner
+                android:id="@+id/move_to_department_spinner"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+
+            <Button
+                android:id="@+id/move_course_to_department_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="112dp"
+                android:background="@android:color/holo_blue_bright"
+                android:text="@string/move_course" />
+        </TableRow>
+
+        <TableRow
+            android:id="@+id/move_course_button_row"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:minHeight="40dp"
+            android:orientation="horizontal"
+            android:paddingTop="16dp">
+
+            <Button
+                android:id="@+id/move_course_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="112dp"
+                android:background="@android:color/holo_blue_bright"
+                android:text="@string/move_course" />
+
+        </TableRow>
+
     </TableLayout>
+
+
 </RelativeLayout>

@@ -29,17 +29,20 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import static com.jrsqlite.AppConstants.ADDED_COURSE;
+import static com.jrsqlite.AppConstants.DELETED_COURSE;
+import static com.jrsqlite.AppConstants.MOVED_COURSE;
+
 public class CourseListActivity extends AppCompatActivity {
     private RecyclerView recyclerView;
     private RVAdapter rvAdapter;
-    private final int DELETED_COURSE = 3;
-    private final int ADDED_COURSE = 4;
 
     private List<CollegeCourse> collegeCourseList;
     private Spinner spinner;
     private CourseDAO courseDAO;
     private int currentDepartmentId;
-    List<CollegeCourse> allCourses;
+    private List<CollegeCourse> allCourses;
+    private ArrayList<String> departmentJsonList;
 
 
     @Override
@@ -52,6 +55,7 @@ public class CourseListActivity extends AppCompatActivity {
         Bundle extras = getIntent().getExtras();
         currentDepartmentId = extras.getInt(DepartmentConstants.CURRENT_DEPARTMENT_ID);
         ArrayList<Integer> removedDepartments = extras.getIntegerArrayList("removedDepartments");
+        departmentJsonList = extras.getStringArrayList("collegeDepartments");
 
 
         Log.i(AppConstants.APP_TAG, "CourseListActivity, current department id: "
@@ -193,28 +197,36 @@ public class CourseListActivity extends AppCompatActivity {
             view.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    Intent intent = new Intent(CourseListActivity.this, CourseDetailsActivity.class);
-                    Bundle bundle = new Bundle();
-                    String name = ((AppCompatTextView) v).getText().toString();
-                    CollegeCourse collegeCourse = getCollegeCourse(name);
-                    if (collegeCourse == null) {
-                        Toast.makeText(CourseListActivity.this,
-                                "There was a problem finding " + name, Toast.LENGTH_LONG).show();
-                        return;
+                    try {
+                        Intent intent = new Intent(CourseListActivity.this, CourseDetailsActivity.class);
+                        Bundle bundle = new Bundle();
+                        String name = ((AppCompatTextView) v).getText().toString();
+                        CollegeCourse collegeCourse = getCollegeCourse(name);
+                        if (collegeCourse == null) {
+                            Toast.makeText(CourseListActivity.this,
+                                    "There was a problem finding " + name, Toast.LENGTH_LONG).show();
+                            return;
+                        }
+                        bundle.putString("name", collegeCourse.getName());
+                        bundle.putString("instructor", collegeCourse.getInstructor());
+                        bundle.putInt("capacity", collegeCourse.getCapacity());
+                        bundle.putString("number", collegeCourse.getNumber());
+                        bundle.putInt("courseId", collegeCourse.getId());
+                        bundle.putStringArrayList("collegeDepartments", departmentJsonList);
+
+                        int indexOfCourse = getIndexOfCourse(collegeCourse);
+                        if (indexOfCourse == -1) {
+                            Log.e(AppConstants.APP_TAG, "Unable to get index of course: "
+                                    + collegeCourse.getName());
+                            return;
+                        }
+                        bundle.putInt("position", indexOfCourse);
+                        intent.putExtras(bundle);
+                        startActivityForResult(intent, DELETED_COURSE);
+                    } catch (Exception ex) {
+                        Log.e(AppConstants.APP_TAG, "Problem displaying course details: "
+                                + ex.getMessage());
                     }
-                    bundle.putString("name", collegeCourse.getName());
-                    bundle.putString("instructor", collegeCourse.getInstructor());
-                    bundle.putInt("capacity", collegeCourse.getCapacity());
-                    bundle.putString("number", collegeCourse.getNumber());
-                    int indexOfCourse = getIndexOfCourse(collegeCourse);
-                    if (indexOfCourse == -1) {
-                        Log.e(AppConstants.APP_TAG, "Unable to get index of course: "
-                                + collegeCourse.getName());
-                        return;
-                    }
-                    bundle.putInt("position", indexOfCourse);
-                    intent.putExtras(bundle);
-                    startActivityForResult(intent, DELETED_COURSE);
                 }
             });
 
@@ -261,35 +273,74 @@ public class CourseListActivity extends AppCompatActivity {
         }
         int result = data.getIntExtra("result", 9);
         if (result == DELETED_COURSE) {
-            Log.i(AppConstants.APP_TAG, "Received delete course result");
-            int position = data.getIntExtra("position", -1);
-            if (position > -1) {
-                removeAt(position);
-                rvAdapter.notifyDataSetChanged();
-                recyclerView.getLayoutManager().scrollToPosition(0);
-                Toast.makeText(CourseListActivity.this, "Removed course", Toast.LENGTH_SHORT).show();
-            }
+            removeCourse(data, true);
         } else if (result == ADDED_COURSE) {
-            Log.i(AppConstants.APP_TAG, "Received add course result");
-
-            String courseName = data.getStringExtra("name");
-            String instructor = data.getStringExtra("instructor");
-            int capacity = data.getIntExtra("capacity", 30);
-            String courseNumber = data.getStringExtra("number");
-            CollegeCourse collegeCourse = new CollegeCourse(courseName, capacity, instructor, courseNumber, currentDepartmentId);
-            int id = courseDAO.saveCourse(collegeCourse);
-
-            if (id == -1) {
-                return;
-            }
-
-            collegeCourse.setId(id);
-            collegeCourseList.add(0, collegeCourse);
-            rvAdapter.notifyItemInserted(0);
-            recyclerView.getLayoutManager().scrollToPosition(0);
-            Toast.makeText(CourseListActivity.this, "Added " + courseName, Toast.LENGTH_LONG).show();
+            addCourse(data);
+        } else if (result == MOVED_COURSE) {
+            moveCourse(data);
         }
 
+    }
+
+    private void moveCourse(Intent data) {
+        removeCourse(data, false);
+        String courseName = data.getStringExtra("name");
+        String instructor = data.getStringExtra("instructor");
+        int capacity = data.getIntExtra("capacity", 30);
+        String courseNumber = data.getStringExtra("number");
+        int newDepartmentId = data.getIntExtra("newDepartmentId", -1);
+
+        if (newDepartmentId == -1) {
+            Log.e(AppConstants.APP_TAG, "Unable to find new department id to move course: "
+                    + courseName);
+            return;
+        }
+
+        CollegeCourse collegeCourse =
+                new CollegeCourse(courseName, capacity, instructor, courseNumber, newDepartmentId);
+        courseDAO.saveCourse(collegeCourse);
+        Toast.makeText(CourseListActivity.this, "Moved course: " + courseName,
+                Toast.LENGTH_SHORT).show();
+    }
+
+    private void addCourse(Intent data) {
+        Log.i(AppConstants.APP_TAG, "Received add course result");
+
+        String courseName = data.getStringExtra("name");
+        String instructor = data.getStringExtra("instructor");
+        int capacity = data.getIntExtra("capacity", 30);
+        String courseNumber = data.getStringExtra("number");
+        CollegeCourse collegeCourse = new CollegeCourse(courseName, capacity,
+                instructor, courseNumber, currentDepartmentId);
+        addCourse(collegeCourse);
+    }
+
+    private void addCourse(CollegeCourse collegeCourse) {
+        int id = courseDAO.saveCourse(collegeCourse);
+
+        if (id == -1) {
+            return;
+        }
+
+        collegeCourse.setId(id);
+        collegeCourseList.add(0, collegeCourse);
+        rvAdapter.notifyItemInserted(0);
+        recyclerView.getLayoutManager().scrollToPosition(0);
+        Toast.makeText(CourseListActivity.this, "Added " + collegeCourse.getName(),
+                Toast.LENGTH_LONG).show();
+    }
+
+    private void removeCourse(Intent data, boolean showToast) {
+        Log.i(AppConstants.APP_TAG, "Received delete course result");
+        int position = data.getIntExtra("position", -1);
+        if (position > -1) {
+            removeAt(position);
+            rvAdapter.notifyDataSetChanged();
+            recyclerView.getLayoutManager().scrollToPosition(0);
+            if (showToast) {
+                Toast.makeText(CourseListActivity.this, "Removed course", Toast.LENGTH_SHORT).show();
+            }
+        }
     }
 
     public void removeAt(int position) {
@@ -301,7 +352,6 @@ public class CourseListActivity extends AppCompatActivity {
         }
         collegeCourseList.remove(position);
         rvAdapter.notifyItemRemoved(position);
-        Toast.makeText(CourseListActivity.this, "Removed " + name, Toast.LENGTH_LONG).show();
     }
 
     @Override

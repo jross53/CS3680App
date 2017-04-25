@@ -8,6 +8,10 @@ public class CollegeDepartment {
     private int id;
     private String name;
 
+    public CollegeDepartment() {
+
+    }
+
     public CollegeDepartment(String name) {
         this.name = name;
     }

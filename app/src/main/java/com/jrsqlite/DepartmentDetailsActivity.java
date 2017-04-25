@@ -19,6 +19,7 @@ public class DepartmentDetailsActivity extends AppCompatActivity {
     private String name;
     private int id;
     private int position;
+    private ArrayList<String> departmentJsonList;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -26,6 +27,7 @@ public class DepartmentDetailsActivity extends AppCompatActivity {
         name = extras.getString("name");
         id = extras.getInt("id");
         position = extras.getInt("position");
+        departmentJsonList = extras.getStringArrayList("collegeDepartments");
         final ArrayList<Integer> removedDepartments = extras.getIntegerArrayList("removedDepartments");
 
         super.onCreate(savedInstanceState);
@@ -58,6 +60,7 @@ public class DepartmentDetailsActivity extends AppCompatActivity {
                     Bundle bundle = new Bundle();
                     bundle.putInt(DepartmentConstants.CURRENT_DEPARTMENT_ID, id);
                     bundle.putIntegerArrayList("removedDepartments", removedDepartments);
+                    bundle.putStringArrayList("collegeDepartments", departmentJsonList);
 
                     Intent intent = new Intent(DepartmentDetailsActivity.this, CourseListActivity.class);
                     intent.putExtras(bundle);

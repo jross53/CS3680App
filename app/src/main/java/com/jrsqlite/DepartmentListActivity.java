@@ -18,6 +18,8 @@ import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jrsqlite.database.DepartmentDAO;
 
 import java.util.ArrayList;
@@ -31,7 +33,6 @@ public class DepartmentListActivity extends AppCompatActivity {
 
     private List<CollegeDepartment> collegeDepartmentList;
     private DepartmentDAO departmentDAO;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -64,7 +65,7 @@ public class DepartmentListActivity extends AppCompatActivity {
         filterButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
+                InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
                 imm.hideSoftInputFromWindow(v.getWindowToken(), 0);
                 EditText filterEditText = (EditText) findViewById(R.id.department_filter_edit_text);
                 String valueToFilterBy = filterEditText.getText().toString();
@@ -87,7 +88,7 @@ public class DepartmentListActivity extends AppCompatActivity {
 
     private void generateNewCollegeDepartmentListFromDatabase() {
         List<CollegeDepartment> existingCollegeDepartments = departmentDAO.findAll();
-        if(existingCollegeDepartments == null || existingCollegeDepartments.size() == 0) {
+        if (existingCollegeDepartments == null || existingCollegeDepartments.size() == 0) {
             Log.i(AppConstants.APP_TAG, "Generating test departments");
             boolean testDepartmentsWereInserted = departmentDAO.insertTestDepartments();
             if (!testDepartmentsWereInserted) {
@@ -149,12 +150,30 @@ public class DepartmentListActivity extends AppCompatActivity {
                     bundle.putInt("position", indexOfDepartment);
                     bundle.putInt("id", collegeDepartment.getId());
                     bundle.putIntegerArrayList("removedDepartments", removedDepartments);
+                    bundle.putStringArrayList("collegeDepartments", generateCollegeCourseJsonList());
+
                     intent.putExtras(bundle);
                     startActivityForResult(intent, DELETED_DEPARTMENT);
                 }
+
             });
 
             return new ItemHolder(view);
+        }
+
+        private ArrayList<String> generateCollegeCourseJsonList() {
+            ArrayList<String> collegeCourseJsonList = new ArrayList<>();
+            ObjectMapper objectMapper = new ObjectMapper();
+
+            for(CollegeDepartment collegeDepartment : collegeDepartmentList) {
+                try {
+                    collegeCourseJsonList.add(objectMapper.writeValueAsString(collegeDepartment));
+                } catch (JsonProcessingException e) {
+                    Log.e(AppConstants.APP_TAG, e.getMessage());
+                }
+            }
+
+            return collegeCourseJsonList;
         }
 
         private CollegeDepartment getCollegeDepartment(String name) {
@@ -219,7 +238,7 @@ public class DepartmentListActivity extends AppCompatActivity {
     public void removeAt(int position) {
         CollegeDepartment collegeDepartment = collegeDepartmentList.get(position);
         String name = collegeDepartment.getName();
-        if(!departmentDAO.deleteDepartment(collegeDepartment)) {
+        if (!departmentDAO.deleteDepartment(collegeDepartment)) {
             Toast.makeText(DepartmentListActivity.this, "Unable to delete department: " + name, Toast.LENGTH_LONG).show();
             return;
         } else {

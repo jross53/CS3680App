@@ -9,4 +9,6 @@
     <string name="enter_department_name">Enter Department Name</string>
     <string name="save">Save</string>
     <string name="enter_capacity">Enter Capacity</string>
+    <string name="move_course">Move</string>
+    <string name="move_to_department">Move to department:</string>
 </resources>
